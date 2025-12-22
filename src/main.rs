@@ -174,29 +174,34 @@ async fn mqtt_manager(
 async fn ha_driven_reader(
     mqtt_client: mqtt::AsyncClient
 ) {
-    let _ = Command::new("killall").arg("-9").arg("ha_driven").spawn();
-    sleep(Duration::from_millis(500)).await;
+    loop {
+        let _ = Command::new("killall").arg("-9").arg("ha_driven").status().await;
+        sleep(Duration::from_millis(500)).await;
 
-    let mut command = Command::new("ha_driven");
-    command.stdout(Stdio::piped());
-    info!("Preparing to read logs from ha_driven...");
+        let mut command = Command::new("ha_driven");
+        command.stdout(Stdio::piped());
+        info!("Preparing to read logs from ha_driven...");
 
-    let mut child = command.spawn().expect("Failed to spawn child process");
+        let mut child = command.spawn().expect("Failed to spawn child process");
 
-    let stdout = child.stdout.take().expect("Failed to open stdout");
+        let stdout = child.stdout.take().expect("Failed to open stdout");
 
-    let mut reader = BufReader::new(stdout).lines();
+        let mut reader = BufReader::new(stdout).lines();
 
-    while let Ok(Some(line)) = reader.next_line().await {
-        if line.contains("onReceiveMessage") && line.contains("method") && line.contains("res/report") {
-        //if line.contains("onReceiveMessage") && line.contains("method") && line.contains("res/report") && line.contains("res_list") {
-            let s = line.split(">>").nth(1).unwrap();
-            let s2 = s.trim().split(" ").nth(0).unwrap();
-            println!("Captured line1: {}", s2);
-
-            let _ = mqtt_client
-                .publish(mqtt::Message::new(TOPIC_RESPONSE, s2.to_string().as_bytes(), 0));
-            continue;
+        while let Ok(Some(line)) = reader.next_line().await {
+            if line.contains("another process exist") {
+                break;
+            }
+            if line.contains("onReceiveMessage") && line.contains("method") && line.contains("res/report") {
+                if let Some(s) = line.split(">>").nth(1) {
+                    if let Some(s2) = s.trim().split_whitespace().next() {
+                        debug!("Captured line1: {}", s2);
+                        let _ = mqtt_client
+                            .publish(mqtt::Message::new(TOPIC_RESPONSE, s2.to_string().as_bytes(), 0)).await;
+                    }
+                }
+                continue;
+            }
         }
     }
 }
@@ -207,6 +212,10 @@ async fn agent_manager(
     mut command_rx: mpsc::Receiver<String>,
     bind_id: u32,
 ) {
+    let _ = Command::new("rm").arg("-rf").arg("/tmp/miio_agent.socket").status().await;
+    sleep(Duration::from_millis(500)).await;
+    let _ = Command::new("killall").arg("-9").arg("ha_agent").status().await;
+
     let mut buf = [0; 4096];
 
     loop {

@@ -1,22 +1,7 @@
-# ha_agent to MQTT for Aqara Gateway Hubs (M2/G3/etc.)
+# ha_agent to MQTT for Aqara Devices.
 
-Use [cross](https://github.com/cross-rs/cross) to build, or grab a prebuilt binary at [Releases](https://github.com/stackia/aqara-agent2mqtt/releases).
 
-```shell
-cross build --target armv7-unknown-linux-gnueabihf --release
-```
-
-Upload the built binary `target/armv7-unknown-linux-gnueabihf/release/aqara-agent2mqtt` to your Aqara Hubs (need to enable telnet first).
-
-To start `aqara-agent2mqtt` automatically, append these to your `post_init.sh`:
-
-```shell
-if [ -f /data/bin/aqara-agent2mqtt ]; then
-  nohup /data/bin/aqara-agent2mqtt > /dev/null 2>&1 &
-fi
-```
-
-All writes to the `agent/command` MQTT topic will be send to `ha_agent`. And all responses/reports from `ha_agent` will be write to `agent/response` MQTT topic.
+All writes to the `miio/command` MQTT topic will be send to `ha_agent`. And the command reponse from `ha_agent` will be write to `miio/command_ack` MQTT topic.
 
 Here are some possible commands:
 
@@ -93,7 +78,7 @@ Here are some possible commands:
 }
 ```
 
-If success, response will be reflected in `agent/response` topic:
+If success, response will be reflected in `miio/response` topic:
 
 ```jsonc
 // response
@@ -196,6 +181,6 @@ If success, response will be reflected in `agent/response` topic:
 }
 ```
 
-If subscribed successfully, updates to subscribed resources will be reflected in `agent/response` topic (those with `"method": "auto.forward"`).
+If subscribed successfully, updates to subscribed resources will be reflected in `openmiio/resport` topic (those with `"method": "auto.forward"`).
 
 Be aware that resource values for `auto.forward` are actually the UTF-8 Hex representation of the original value. So `"0.4.85":"323530"` actually means `"0.4.85":"250"`.
