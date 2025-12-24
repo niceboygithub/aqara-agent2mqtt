@@ -189,15 +189,16 @@ async fn ha_driven_reader(
         let mut reader = BufReader::new(stdout).lines();
 
         while let Ok(Some(line)) = reader.next_line().await {
+            debug!("Captured line: {}", line);
             if line.contains("another process exist") {
                 break;
             }
             if line.contains("onReceiveMessage") && line.contains("method") && line.contains("res/report") {
                 if let Some(s) = line.split(">>").nth(1) {
-                    if let Some(s2) = s.trim().split_whitespace().next() {
-                        debug!("Captured line1: {}", s2);
+                    if let Some(s2) = s.trim().split(" (master_bridge").nth(0) {
+                        debug!("res/report line: {}", s2);
                         let _ = mqtt_client
-                            .publish(mqtt::Message::new(TOPIC_RESPONSE, s2.to_string().as_bytes(), 0)).await;
+                            .publish(mqtt::Message::new(TOPIC_RESPONSE, s2.as_bytes(), 0)).await;
                     }
                 }
                 continue;

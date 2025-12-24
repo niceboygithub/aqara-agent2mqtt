@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "aqara-agent2mqtt"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "clap",
  "log",
