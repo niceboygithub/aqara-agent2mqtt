@@ -8,6 +8,7 @@ Here are some possible commands:
 - Modify resources under the gateway:
 
 ```jsonc
+// e.g. emit IR sequence on G3/M3/M2 with learned ircode
 {
   "_to": 4,
   "id": 123,
@@ -16,8 +17,23 @@ Here are some possible commands:
     "name": "/lumi/gw/res/write",
     "value": {
       "data": {
-        // e.g. emit IR sequence on G3
         "8.0.2092": "{\"mode\":0,\"len\":311,\"ircode\":\"nE5mk0lk0mc5m0sm0xnMsmswADKbTCWTGbTQBA5uAgk2mMzlk1mMxAHIBgprOZxLJsAoUxm0wmQCJTEBkgEFmoHxTaYTcBhgCCAQoDsphOACHAZWaziaSyazMDogZCBUKZgEFNQCDAVIBkpjNpkCIc2BdUBkgf3moRZAqSEgc2mEwCQWazkKowkDAqebgDlNgVFCIoCpAs7BlMJBwQjAgQNw5xLJpMZlMJrLJxOZrOJZMpjNwRiEKOYAAEA=\"}"
+      },
+      "did": "lumi1.54ef12345678",
+      "source": ""
+    }
+  }
+}
+// e.g. emit IR sequence on G3/M3/M2 via brandId, remoteID and acKey which downloaded
+{
+  "_to": 4,
+  "id": 123,
+  "method": "auto.control",
+  "params": {
+    "name": "/lumi/gw/res/write",
+    "value": {
+      "data": {
+        "8.0.2092": "{\"mode\":1,\"brandId\":187,\"remoteId\":4803,\"acKey\":\"M0_T26_S0\"}"
       },
       "did": "lumi1.54ef12345678",
       "source": ""
